@@ -112,11 +112,10 @@
                 Syidaaaa ~! <br>
                 May you be blessed <br> with a greatness ahead! <br>
                 Hope your 2026 is brighter than ever, <br>
-                as full of joy as these kittens! 🐱<br>
+                as full of joy as these kittens! 🐱<br><br>
 
-                also Stay Slayyyyyin Gurl 💅
+                Stay Slayyyyyin Gurl 💅 -Cj
                 <br>
-                <b>-Cj</b>
             </p>
         </div>
     </div>
@@ -128,12 +127,12 @@
         let isOpened = false;
         let isMuted = false;
 
-        // --- SOUND SETUP ---
-        // Ensure these files exist in your GitHub repo!
+        // --- SOUND SETUP (LOCAL FILES) ---
+        // Ensure pop.mp3, meow.mp3, rustle.mp3, box.mp3, music.mp3 exist in your repo
         const popSound = new Audio('pop.mp3'); 
         const meowSound = new Audio('meow.mp3'); 
         const rustleSound = new Audio('rustle.mp3');
-        const boxSound = new Audio('box.mp3'); // NEW BOX SOUND
+        const boxSound = new Audio('box.mp3'); 
         let bgMusic = new Audio('music.mp3');
         bgMusic.loop = true;
 
@@ -254,7 +253,9 @@
         }
 
         function releaseTheCats(cx, cy) {
-            const memeUrl = "https://media1.tenor.com/m/bWUeVRqW9-IAAAAC/fast-cat-cat-excited.gif";
+            // CHANGED: Now using local file cat.gif
+            const memeUrl = "cat.gif"; 
+            
             for (let i = 0; i < 12; i++) {
                 let el = document.createElement('img');
                 el.src = memeUrl;
