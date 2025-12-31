@@ -16,6 +16,14 @@
             overflow: hidden; touch-action: none;
         }
 
+        /* MUTE BUTTON */
+        #mute-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 2000;
+            padding: 10px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.8); cursor: pointer; font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
         /* LAYER 1: BACK (The Card) */
         .container {
             text-align: center;
@@ -65,22 +73,22 @@
         #gift-box { 
             font-size: 80px; cursor: pointer; 
             display: inline-block;
-            animation: shake 0.5s infinite ease-in-out; 
+            animation: shake 2s infinite; 
             z-index: 1000; position: relative; 
         }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0% { transform: translate(0, 0) rotate(0deg); }
+            2% { transform: translate(-1px, 2px) rotate(-1deg); }
+            4% { transform: translate(-3px, 0px) rotate(1deg); }
+            6% { transform: translate(3px, 2px) rotate(0deg); }
+            8% { transform: translate(1px, -1px) rotate(1deg); }
+            10% { transform: translate(-1px, 2px) rotate(-1deg); }
+            12% { transform: translate(-3px, 1px) rotate(0deg); }
+            14% { transform: translate(3px, 1px) rotate(-1deg); }
+            16% { transform: translate(-1px, -1px) rotate(1deg); }
+            18% { transform: translate(1px, 2px) rotate(0deg); }
+            20% { transform: translate(0, 0) rotate(0); }
         }
         
         #audio-container { position: absolute; width: 0; height: 0; overflow: hidden; }
@@ -88,6 +96,7 @@
 </head>
 <body onclick="handleScreenClick(event)">
 
+    <button id="mute-btn" onclick="toggleMute()">🔊</button>
     <canvas id="confetti"></canvas>
     <div id="audio-container"></div>
 
@@ -98,12 +107,14 @@
         </div>
 
         <div id="card-content">
-            <h1>Happy Birthday Syida!</h1>
+            <h1>Happy Birthday & <br> Happy New Year!</h1>
             <p>
-                & Happy New Year <br>
-                May you be blessed with a great year ahead! <br><br>
-                I hope your 2026 is as bright as a daisy <br>
-                and as full of joy as a <b>hepi hepi cat!</b> 🌼🐱<br>
+                Syidaaaa ~! <br>
+                May you be blessed <br> with a greatness ahead! <br>
+                Hope your 2026 is brighter than ever, <br>
+                as full of joy as these kittens! 🐱<br>
+
+                also Stay Slayyyyyin Gurl 💅
                 <br>
                 <b>-Cj</b>
             </p>
@@ -115,12 +126,36 @@
         let dragTarget = null;
         let lastPos = { x: 0, y: 0 };
         let isOpened = false;
+        let isMuted = false;
 
-        // SOUNDS
+        // --- SOUND SETUP ---
+        // Ensure these files exist in your GitHub repo!
         const popSound = new Audio('pop.mp3'); 
         const meowSound = new Audio('meow.mp3'); 
         const rustleSound = new Audio('rustle.mp3');
+        const boxSound = new Audio('box.mp3'); // NEW BOX SOUND
+        let bgMusic = new Audio('music.mp3');
+        bgMusic.loop = true;
 
+        // Function to play sound for max 1 second
+        function playShortSound(sound) {
+            if (isMuted) return;
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Audio play failed", e));
+            setTimeout(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }, 1000);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('mute-btn');
+            btn.innerText = isMuted ? "🔇" : "🔊";
+            if (bgMusic) bgMusic.muted = isMuted;
+        }
+
+        // --- GRAPHICS SETUP ---
         const canvas = document.getElementById("confetti");
         const ctx = canvas.getContext("2d");
         let parts = [];
@@ -136,19 +171,22 @@
             if(isOpened) return;
             isOpened = true;
             initHeightMap();
+            
+            // 1. Play Box Sound (1 sec)
+            playShortSound(boxSound);
+
+            // 2. Start Music
+            if (!isMuted) bgMusic.play().catch(e => console.log("Music require interaction"));
+
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('card-content').style.display = 'flex';
             
-            // MUSIC
-            let bgMusic = new Audio('music.mp3');
-            bgMusic.loop = true;
-            bgMusic.play().catch(e => console.log("Audio requires interaction"));
-
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
 
             setTimeout(() => {
                 document.getElementById('card-content').style.opacity = '1';
+                // Big initial mountain burst
                 for(let i=0; i<200; i++) addConfettiPiece(centerX, centerY, true);
                 releaseBalloons(centerX, centerY);
                 releaseTheCats(centerX, centerY);
@@ -158,12 +196,16 @@
 
         function handleScreenClick(e) {
             if (!isOpened) return;
+            // Don't trigger if clicking mute button
+            if (e.target.id === 'mute-btn') return;
+
             const x = e.clientX || e.touches[0].clientX;
             const y = e.clientY || e.touches[0].clientY;
             
+            // Only trigger rustle if NOT clicking an interactive item
             if (e.target.tagName !== 'IMG' && !e.target.classList.contains('balloon')) {
-                rustleSound.currentTime = 0;
-                rustleSound.play();
+                
+                playShortSound(rustleSound); // Rustle limit 1s
 
                 const radius = 60;
                 for(let i = Math.max(0, Math.floor(x - radius)); i < Math.min(heightMap.length, x + radius); i++) {
@@ -231,13 +273,11 @@
                 dragTarget = obj; 
                 el.style.transform = "scale(1.2)";
                 
-                // Play your custom interaction sounds
+                // Interaction Sounds (1 sec limit)
                 if(obj.type === 'cat') { 
-                    meowSound.currentTime = 0; 
-                    meowSound.play().catch(e => console.log("Sound blocked")); 
+                    playShortSound(meowSound); 
                 } else { 
-                    popSound.currentTime = 0; 
-                    popSound.play().catch(e => console.log("Sound blocked")); 
+                    playShortSound(popSound); 
                 }
             };
             el.addEventListener('mousedown', start);
