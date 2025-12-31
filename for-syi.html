@@ -64,9 +64,11 @@
         .happy-meme {
             position: fixed; width: 110px;
             z-index: 999; cursor: grab;
-            mix-blend-mode: multiply;
+            /* REMOVED mix-blend-mode because your GIF is transparent */
             opacity: 1; user-select: none; -webkit-user-drag: none;
             transform: scale(0); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Optional: Add a slight shadow to make them pop */
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); 
         }
 
         /* SHAKING GIFT BOX ANIMATION */
